@@ -3,16 +3,15 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	"github.com/joho/godotenv"
+	"github.com/tmc/langchaingo/llms/openai"
+	"github.com/tmc/langchaingo/schema"
 	"log"
 	"net/http"
 	"os"
 	"text/template"
-
-	"github.com/go-chi/chi"
-	"github.com/go-chi/chi/middleware"
-	"github.com/joho/godotenv"
-	"github.com/tmc/langchaingo/llms/openai"
-	"github.com/tmc/langchaingo/schema"
 )
 
 // initialise to load environment variable from .env file
@@ -53,6 +52,7 @@ func run(w http.ResponseWriter, r *http.Request) {
 	// create the LLM
 	llm, err := openai.NewChat(openai.WithModel(os.Getenv("OPENAI_MODEL")))
 	if err != nil {
+		log.Printf("Error creating LLM: %v", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -64,6 +64,11 @@ func run(w http.ResponseWriter, r *http.Request) {
 	aimsg, err := llm.Call(context.Background(), chatmsg)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+	if aimsg == nil {
+		http.Error(w, "Received nil response from LLM", http.StatusInternalServerError)
+		return
 	}
 
 	response := struct {
