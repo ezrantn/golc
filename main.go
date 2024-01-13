@@ -46,14 +46,14 @@ func run(w http.ResponseWriter, r *http.Request) {
 	// decode JSON from client
 	err := json.NewDecoder(r.Body).Decode(&prompt)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Error decoding JSON: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 	// create the LLM
 	llm, err := openai.NewChat(openai.WithModel(os.Getenv("OPENAI_MODEL")))
 	if err != nil {
 		log.Printf("Error creating LLM: %v", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Error creating LLM: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -63,7 +63,8 @@ func run(w http.ResponseWriter, r *http.Request) {
 	}
 	aimsg, err := llm.Call(context.Background(), chatmsg)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Printf("Error calling LLM: %v", err)
+		http.Error(w, "Error calling LLM: "+err.Error(), http.StatusInternalServerError)
 	}
 
 	if aimsg == nil {
@@ -78,5 +79,10 @@ func run(w http.ResponseWriter, r *http.Request) {
 		Input:    prompt.Input,
 		Response: aimsg.GetContent(),
 	}
-	json.NewEncoder(w).Encode(response)
+	err = json.NewEncoder(w).Encode(response)
+	if err != nil {
+		log.Printf("Error encoding JSON response: %v", err)
+		http.Error(w, "Error encoding JSON response: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
