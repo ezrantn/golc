@@ -14,11 +14,9 @@ import (
 	"text/template"
 )
 
-// initialise to load environment variable from .env file
 func init() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
+	if err := godotenv.Load(); err != nil {
+		log.Fatal("Error loading .env file", err)
 	}
 }
 
@@ -28,28 +26,36 @@ func main() {
 	r.Handle("/static/*", http.StripPrefix("/static", http.FileServer(http.Dir("./static"))))
 	r.Get("/", index)
 	r.Post("/run", run)
-	log.Println("\033[93mBreeze started. Press CTRL+C to quit.\033[0m")
-	http.ListenAndServe(":"+os.Getenv("PORT"), r)
+
+	port := os.Getenv("PORT")
+
+	log.Printf("\033[93mBreeze started. Press CTRL+C to quit on port %s.\033[0m\n", port)
+	log.Fatal(http.ListenAndServe(":"+port, r))
 }
 
-// index
 func index(w http.ResponseWriter, r *http.Request) {
-	t, _ := template.ParseFiles("static/index.html")
-	t.Execute(w, nil)
+	t, err := template.ParseFiles("static/index.html")
+	if err != nil {
+		log.Printf("Error parsing template: %v", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	if err := t.Execute(w, nil); err != nil {
+		log.Printf("Error executing template: %v", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+	}
 }
 
-// call the LLM and return the response
 func run(w http.ResponseWriter, r *http.Request) {
-	prompt := struct {
+	var prompt struct {
 		Input string `json:"input"`
-	}{}
-	// decode JSON from client
-	err := json.NewDecoder(r.Body).Decode(&prompt)
-	if err != nil {
+	}
+	if err := json.NewDecoder(r.Body).Decode(&prompt); err != nil {
 		http.Error(w, "Error decoding JSON: "+err.Error(), http.StatusBadRequest)
 		return
 	}
-	// create the LLM
+
 	llm, err := openai.NewChat(openai.WithModel(os.Getenv("OPENAI_MODEL")))
 	if err != nil {
 		log.Printf("Error creating LLM: %v", err)
@@ -57,14 +63,16 @@ func run(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	chatmsg := []schema.ChatMessage{
+	chatMsg := []schema.ChatMessage{
 		schema.SystemChatMessage{Content: "Hello, I am a friendly AI assistant."},
 		schema.HumanChatMessage{Content: prompt.Input},
 	}
-	aimsg, err := llm.Call(context.Background(), chatmsg)
+
+	aimsg, err := llm.Call(context.Background(), chatMsg)
 	if err != nil {
 		log.Printf("Error calling LLM: %v", err)
 		http.Error(w, "Error calling LLM: "+err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	if aimsg == nil {
@@ -79,8 +87,8 @@ func run(w http.ResponseWriter, r *http.Request) {
 		Input:    prompt.Input,
 		Response: aimsg.GetContent(),
 	}
-	err = json.NewEncoder(w).Encode(response)
-	if err != nil {
+
+	if err := json.NewEncoder(w).Encode(response); err != nil {
 		log.Printf("Error encoding JSON response: %v", err)
 		http.Error(w, "Error encoding JSON response: "+err.Error(), http.StatusInternalServerError)
 		return
