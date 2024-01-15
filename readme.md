@@ -2,6 +2,22 @@
 
 This documentation provides an overview and explanation of the code for a ChatGPT clone that acts as a Language Model (LLM) using the OpenAI API. The application is built in Go and utilizes the Chi router for handling HTTP requests.
 
+## Website
+
+Explore the Serpent Language Model on my website:
+
+[serpentllm.up.railway.app](serpentllm.up.railway.app)
+
+## Screenshots
+
+Front end of the web app:
+
+![Look at the front of the web app](./static/demo-1.png)
+
+Interaction with the language model:
+
+![Look when give an answer](./static/demo-2.png)
+
 ## Dependencies
 
 - `github.com/go-chi/chi/v5:` A lightweight, idiomatic and composable router for building Go HTTP services
