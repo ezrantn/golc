@@ -28,7 +28,7 @@ body {
 }
 
 .logo {
-  --logo-h: 10.625rem;
+  --logo-h: 15.625rem;
   position: absolute;
   width: auto;
   top: 45%;
