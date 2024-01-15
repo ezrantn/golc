@@ -36,7 +36,7 @@ go get -u github.com/go-chi/chi/v5 github.com/joho/godotenv github.com/tmc/langc
 
 ## Configuration
 
-The application requires a configuration file named .env to be present in the project root. The following environment variables must be defined in the file:
+The application requires a configuration file named `.env` to be present in the project root. The following environment variables must be defined in the file:
 
 - OPENAI_API_KEY: Your own API key from OpenAI
 - PORT: The port on which the application will listen for incoming HTTP requests.
