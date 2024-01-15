@@ -6,7 +6,7 @@ This documentation provides an overview and explanation of the code for a ChatGP
 
 Explore the Serpent Language Model on my website:
 
-[serpentllm.up.railway.app](serpentllm.up.railway.app)
+[serpentllm.up.railway.app](https://serpentllm.up.railway.app/)
 
 ## Screenshots
 
