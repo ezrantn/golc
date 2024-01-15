@@ -1,4 +1,4 @@
-module github.com/sausheong/breeze
+module github.com/thisdoraemon/serpent-llm
 
 go 1.20
 
