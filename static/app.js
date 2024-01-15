@@ -1,4 +1,3 @@
-
 t = 0;
 let resp = "";
 var converter = new showdown.Converter();

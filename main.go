@@ -29,7 +29,7 @@ func main() {
 
 	port := os.Getenv("PORT")
 
-	log.Printf("\033[93mBreeze started. Press CTRL+C to quit on port %s.\033[0m\n", port)
+	log.Printf("\033[93mSerpent is started. Press CTRL+C to quit on port %s.\033[0m\n", port)
 	log.Fatal(http.ListenAndServe(":"+port, r))
 }
 
